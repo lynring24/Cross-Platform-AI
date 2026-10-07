@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(lspci -nn)",
+      "Bash(nvidia-smi)",
+      "Read(//usr/lib/**)",
+      "Bash(dpkg -l)",
+      "Read(//usr/share/vulkan/icd.d/**)",
+      "Bash(vulkaninfo --summary)",
+      "Read(//home/hrchung/**)"
+    ]
+  }
+}
