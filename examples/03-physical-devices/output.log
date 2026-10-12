@@ -1,0 +1,10 @@
+Selected physical device: Intel(R) Graphics (ARL)
+Device type: IntegratedGpu
+Device API version: 1.4.318
+Compute queue family index: 0
+Queues in selected family: 1
+shaderFloat64 supported (not enabled): yes
+maxComputeWorkGroupCount: 65535, 65535, 65535
+maxComputeWorkGroupSize: 1024, 1024, 1024
+maxComputeWorkGroupInvocations: 1024
+maxStorageBufferRange: 4294967295 bytes

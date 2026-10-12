@@ -1,0 +1,9 @@
+$ ./build/main
+Validation layer enabled: VK_LAYER_KHRONOS_validation
+Debug messenger created.
+Debug messenger and instance destroyed.
+
+$ ./build/completed/main
+Validation layer enabled: VK_LAYER_KHRONOS_validation
+Debug messenger created.
+Debug messenger and instance destroyed.
