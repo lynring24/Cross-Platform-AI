@@ -8,6 +8,7 @@
 #include <optional>
 #include <utility>
 // TODO: <vector> 헤더를 추가합니다.
+#include <vector>
 
 class ComputeApplication
 {
@@ -46,6 +47,9 @@ private:
     BufferResource output;
     vk::raii::DescriptorSetLayout descriptorSetLayout = nullptr;
     // TODO: descriptorPool과 descriptorSets 멤버를 추가합니다.
+    vk::raii::DescriptorPool descriptorPool = nullptr;
+    std::vector<vk::raii::DescriptorSet> descriptorSets;
+
 
     bool initVulkan()
     {
@@ -55,7 +59,9 @@ private:
             && pickPhysicalDevice()
             && createLogicalDevice()
             && createStorageBuffers()
-            && createDescriptorSetLayout();
+            && createDescriptorSetLayout()
+            && createDescriptorPool()
+            && createDescriptorSets();
     }
 
     bool checkValidationLayerSupport()
@@ -326,6 +332,81 @@ private:
         return true;
     }
     // TODO: createDescriptorPool(), createDescriptorSets() 함수를 추가합니다.
+    bool createDescriptorPool()
+    {
+        vk::DescriptorPoolSize poolSize{};
+        poolSize.type = vk::DescriptorType::eStorageBuffer;
+        poolSize.descriptorCount = 3; 
+        vk::DescriptorPoolCreateInfo poolInfo{};
+        poolInfo.flags = vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet;
+        // 풀에서 할당할 set의 최대 개수
+        poolInfo.maxSets = 1; 
+        poolInfo.poolSizeCount = 1 ;
+        // [수정 전] 세미콜론 누락 → "expected ';' before 'descriptorPool'"
+        poolInfo.pPoolSizes = &poolSize;
+        // 풀 생성
+        descriptorPool = vk::raii::DescriptorPool(device, poolInfo);
+        std::cout <<"Descriptor pool created: max sets " << poolInfo.maxSets <<"\n";
+        for (std::uint32_t i=0; i<poolInfo.poolSizeCount ; ++i)
+        {
+            const auto& capacity = poolInfo.pPoolSizes[i];
+            std::cout << " " <<vk::to_string(capacity.type)
+                    << ": " <<capacity.descriptorCount << " descriptor\n";
+        }
+        return true;
+    }
+
+
+    bool createDescriptorSets()
+    {
+        const vk::DescriptorSetLayout layout = *descriptorSetLayout;
+        vk::DescriptorSetAllocateInfo allocInfo{};
+        allocInfo.descriptorPool = *descriptorPool;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.pSetLayouts = &layout;
+
+        descriptorSets = device.allocateDescriptorSets(allocInfo); // C API: vkAllocateDescriptorSets
+  
+        std::array<vk::DescriptorBufferInfo, 3> bufferInfos{};
+        bufferInfos[0].buffer = *inputA.buffer;
+        bufferInfos[1].buffer = *inputB.buffer;
+        bufferInfos[2].buffer = *output.buffer;
+  
+        for (auto& bufferInfo : bufferInfos)
+        {
+            bufferInfo.offset = 0;
+            bufferInfo.range = bufferSize;
+        }
+        std::array<vk::WriteDescriptorSet, 3> writes{};
+        for (std::uint32_t i = 0; i < writes.size(); ++i)
+        {
+            // 이 바인딩에 써 넣을 디스크립터 정보를 지정합니다.
+            writes[i].dstSet = *descriptorSets[0];
+            writes[i].dstBinding = i;
+            writes[i].dstArrayElement = 0;
+            writes[i].descriptorType = vk::DescriptorType::eStorageBuffer;
+            writes[i].descriptorCount = 1;
+            writes[i].pBufferInfo = &bufferInfos[i];
+        }
+        device.updateDescriptorSets(writes, {}); // C API: vkUpdateDescriptorSets
+        std::cout << "Descriptor sets updated: " << descriptorSets.size() << '\n';
+
+        for (const auto& write : writes)
+        {
+            std::cout << "Binding " << write.dstBinding << ": "
+                    << vk::to_string(write.descriptorType) << ", "
+                    << write.descriptorCount << " descriptors\n";
+            // 이 바인딩이 참조하는 버퍼 영역을 출력합니다.
+            for (std::uint32_t i = 0; i < write.descriptorCount; ++i)
+            {
+                const auto& info = write.pBufferInfo[i];
+                std::cout << "  Buffer " << static_cast<VkBuffer>(info.buffer)
+                        << ", offset " << info.offset << ", range " << info.range << " bytes\n";
+            }
+        }
+        return true;
+    }
+
 };
 
 int main()
@@ -333,7 +414,7 @@ int main()
     {
         ComputeApplication app;
         if (!app.run())
-        {
+        { 
             return 1;
         }
     }

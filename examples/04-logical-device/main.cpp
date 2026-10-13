@@ -1,3 +1,4 @@
+// 3장에 이어서 논리 디바이스를 지정한다.
 #include <vulkan/vulkan_raii.hpp>
 
 #include <cstdint>
@@ -27,12 +28,44 @@ private:
     vk::raii::PhysicalDevice physicalDevice = nullptr;
     std::uint32_t computeQueueFamilyIndex = 0;
     // TODO: device와 computeQueue 멤버를 추가합니다.
+    vk::raii::Device device = nullptr;
+    vk::raii::Queue computeQueue = nullptr;
+    
+
 
     bool initVulkan()
     {
         // TODO: 마지막에 createLogicalDevice() 호출을 연결합니다.
-        return createInstance() && setupDebugMessenger() && pickPhysicalDevice();
+        return createInstance() 
+            && setupDebugMessenger() 
+            && pickPhysicalDevice()
+            && createLogicalDevice();
     }
+
+    bool createLogicalDevice()
+    {   // priority 0~1
+        const float queuePriority  = 1.0f;
+        vk::DeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.queueFamilyIndex = computeQueueFamilyIndex;
+        queueCreateInfo.queueCount = 1; 
+        queueCreateInfo.pQueuePriorities = &queuePriority;
+        // 큐 생성 정보 구조체 개수
+        vk::PhysicalDeviceFeatures enabledFeatures{};
+        vk::DeviceCreateInfo createInfo{};
+        createInfo.queueCreateInfoCount = 1;
+        createInfo.pQueueCreateInfos = &queueCreateInfo;
+        createInfo.pEnabledFeatures = &enabledFeatures;
+        // 물리적 디바이스와 생성 정보를 전달해 논리적 디바이스를 만든다. (queueCreateInfo에 요청했던 큐도 함께 생성됨)
+        device = vk::raii::Device(physicalDevice, createInfo);
+        // 프로그램에서 사용할 큐 핸들을 가져온다.
+        const std::uint32_t queueIndex = 0;
+        computeQueue = vk::raii::Queue(device, computeQueueFamilyIndex, queueIndex);
+
+        std::cout << "Logical device created.\n"
+                  << "Compute queue ready: family " << queueCreateInfo.queueFamilyIndex
+                  << ", queue " << queueIndex << ".\n";
+        return true;  
+        }
 
     bool checkValidationLayerSupport()
     {

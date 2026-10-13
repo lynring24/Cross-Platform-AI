@@ -44,6 +44,8 @@ private:
     BufferResource inputB;
     BufferResource output;
     // TODO: descriptorSetLayout 멤버를 추가합니다.
+    vk::raii::DescriptorSetLayout descriptorSetLayout = nullptr;
+
 
     bool initVulkan()
     {
@@ -52,7 +54,8 @@ private:
             && setupDebugMessenger()
             && pickPhysicalDevice()
             && createLogicalDevice()
-            && createStorageBuffers();
+            && createStorageBuffers()
+            && createDescriptorSetLayout();
     }
 
     bool checkValidationLayerSupport()
@@ -306,6 +309,25 @@ private:
         return true;
     }
     // TODO: createDescriptorSetLayout() 함수를 추가합니다.
+    bool createDescriptorSetLayout()
+    {
+        std::array<vk::DescriptorSetLayoutBinding, 3>bindings{};
+        for (std::uint32_t i = 0; i < bindings.size(); ++i)
+        {
+            bindings[i].binding = i;
+            bindings[i].descriptorType = vk::DescriptorType::eStorageBuffer; 
+            bindings[i].descriptorCount = 1;
+            bindings[i].stageFlags = vk::ShaderStageFlagBits::eCompute;
+
+        }
+        vk::DescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.bindingCount = static_cast<std::uint32_t>(bindings.size());
+        layoutInfo.pBindings = bindings.data();
+        descriptorSetLayout = vk::raii::DescriptorSetLayout(device, layoutInfo); // C API: vkCreateDescriptorSetLayout
+        std::cout << "Descriptor set layout created: " << bindings.size()
+            << " bindings.\n";
+        return true;
+    }
 };
 
 int main()
