@@ -1,0 +1,9 @@
+Buffer memory: size 32, alignment 64, type 0
+Buffer memory: size 32, alignment 64, type 0
+Buffer memory: size 32, alignment 64, type 0
+Input A: 0 1 2 3 4 5 6 7
+Input B: 10 11 12 13 14 15 16 17
+Output (initial): 0 0 0 0 0 0 0 0
+Host-visible storage buffers ready: 3 x 32 bytes.
+CPU write/readback verified. No GPU dispatch yet.
+Buffers and memory destroyed.

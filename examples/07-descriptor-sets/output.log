@@ -1,0 +1,10 @@
+Descriptor pool created: max sets 1
+ StorageBuffer: 3 descriptor
+Descriptor sets updated: 1
+Binding 0: StorageBuffer, 1 descriptors
+  Buffer 0x20000000002, offset 0, range 32 bytes
+Binding 1: StorageBuffer, 1 descriptors
+  Buffer 0x40000000004, offset 0, range 32 bytes
+Binding 2: StorageBuffer, 1 descriptors
+  Buffer 0x60000000006, offset 0, range 32 bytes
+Descriptor sets and pool destroyed.
